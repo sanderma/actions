@@ -1,0 +1,60 @@
+---
+run-name: release-${{ inputs.appname }}
+
+on:
+  workflow_dispatch:
+    inputs:
+      appname:
+        required: true
+        type: string
+  workflow_call:
+    inputs:
+      appname:
+        required: true
+        type: string
+
+jobs:
+  staging:
+    concurrency:
+      group: ${{ inputs.appname }}-staging
+      cancel-in-progress: true
+    runs-on: ubuntu-latest
+    environment: staging
+    steps:
+      - uses: actions/checkout@v3
+      - uses: rickstaa/action-create-tag@v1
+        with:
+          tag: ${{ inputs.appname }}-staging
+          force_push_tag: true
+
+  non-prod:
+    concurrency:
+      group: ${{ inputs.appname }}-non-production
+      cancel-in-progress: true
+    runs-on: ubuntu-latest
+    environment: non-prod
+    needs: [staging]
+    steps:
+      - uses: actions/checkout@v3
+      - uses: rickstaa/action-create-tag@v1
+        with:
+          tag: ${{ inputs.appname }}-non-production
+          force_push_tag: true
+
+  prod:
+    concurrency:
+      group: ${{ inputs.appname }}-production
+      cancel-in-progress: true
+    runs-on: ubuntu-latest
+    environment: prod
+    needs: [non-prod]
+    steps:
+      - uses: actions/checkout@v3
+      - uses: rickstaa/action-create-tag@v1
+        with:
+          tag: ${{ inputs.appname }}-production
+          force_push_tag: true
+      - uses: rickstaa/action-create-tag@v1
+        with:
+          tag: ${{ inputs.appname }}-cde
+          force_push_tag: true

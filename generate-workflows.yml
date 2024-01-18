@@ -1,0 +1,45 @@
+---
+name: generate-workflows
+
+on:
+  push:
+    branches:
+      - "master"
+      - "staging"
+    paths:
+      - "deployments/**"
+
+jobs:
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      application_matrix: ${{ steps.matrix.outputs.application_matrix }}
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v3
+      - uses: dorny/paths-filter@v2.11.1
+        name: Get changed manifests
+        id: filter
+        with:
+          list-files: csv
+          filters: |
+            changes:
+              - added|modified: 'deployments/**'
+      - uses: actions/setup-python@v4
+        with:
+          python-version: "3.x"
+          architecture: "x64"
+      - id: matrix
+        name: Generate application matrix
+        run: |
+          application_matrix="${{ steps.filter.outputs.changes_files }})"
+          echo "$application_matrix
+  call-release-workflow:
+    needs: [changes]
+    if: ${{ needs.changes.outputs.application_matrix }}
+    strategy:
+      matrix: ${{ fromJSON(needs.changes.outputs.application_matrix) }}
+      fail-fast: false
+    uses: ./.github/workflows/release.yml
+    with:
+      appname: ${{ matrix.application }}
