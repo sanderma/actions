@@ -4,7 +4,7 @@ name: generate-workflows
 on:
   push:
     branches:
-      - "master"
+      - "main"
       - "staging"
     paths:
       - "deployments/**"
@@ -25,15 +25,11 @@ jobs:
           filters: |
             changes:
               - added|modified: 'deployments/**'
-      - uses: actions/setup-python@v4
-        with:
-          python-version: "3.x"
-          architecture: "x64"
       - id: matrix
         name: Generate application matrix
         run: |
           application_matrix="${{ steps.filter.outputs.changes_files }})"
-          echo "$application_matrix
+          echo "$application_matrix"
   call-release-workflow:
     needs: [changes]
     if: ${{ needs.changes.outputs.application_matrix }}
