@@ -29,7 +29,7 @@ jobs:
         name: Generate application matrix
         run: |
           appnames='${{ steps.filter.outputs.changes_files }}'
-          echo $appnames | jq '.[] |= {"path": . , "appname": ( . | split("/") | .[1])}'
+          echo $appnames | jq --compact-output '.[] |= {"path": . , "appname": ( . | split("/") | .[1])}'
           echo "application_matrix=$appnames" >> $GITHUB_OUTPUT
   call-release-workflow:
     needs: [changes]
