@@ -30,7 +30,8 @@ jobs:
         run: |
           appnames=$(for line in ${{ steps.filter.outputs.changes_files }}; do echo $line | sed -E 's#^deployments/(\w+).*#\1#'; done)
           application_matrix="($appnames)"
-          echo "application_matrix=$application_matrix" | tee >> $GITHUB_OUTPUT
+          echo "application_matrix=$application_matrix"
+          echo "application_matrix=$application_matrix" >> $GITHUB_OUTPUT
   call-release-workflow:
     needs: [changes]
     if: ${{ needs.changes.outputs.application_matrix }}
