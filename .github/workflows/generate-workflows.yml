@@ -29,14 +29,14 @@ jobs:
         name: Generate application matrix
         run: |
           appnames='${{ steps.filter.outputs.changes_files }}'
-          echo "$appnames"
+          echo $appnames | jq '.[] |= {"path": . , "appname": ( . | split("/") | .[1])}'
           echo "application_matrix=$appnames" >> $GITHUB_OUTPUT
   call-release-workflow:
     needs: [changes]
     if: ${{ needs.changes.outputs.application_matrix }}
     strategy:
-      matrix: ${{ needs.changes.outputs.application_matrix }}
+      matrix: ${{ fromJSON(needs.changes.outputs.application_matrix) }}
       fail-fast: false
     uses: ./.github/workflows/release.yml
     with:
-      appname: ${{ matrix.application }}
+      appname: ${{ matrix.appname }}
