@@ -28,7 +28,7 @@ jobs:
       - id: matrix
         name: Generate application matrix
         run: |
-          appnames=$(${{ steps.filter.outputs.changes_files }})
+          appnames='${{ steps.filter.outputs.changes_files }}'
           echo "$appnames"
           echo "application_matrix=$appnames" >> $GITHUB_OUTPUT
   call-release-workflow:
