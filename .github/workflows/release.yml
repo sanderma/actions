@@ -1,5 +1,5 @@
 ---
-run-name: release-${{ inputs.appname }}
+run-name: ${{ inputs.appname }}
 
 on:
   workflow_dispatch:
