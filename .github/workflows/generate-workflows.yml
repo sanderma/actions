@@ -21,20 +21,21 @@ jobs:
         name: Get changed manifests
         id: filter
         with:
-          list-files: csv
+          list-files: shell
           filters: |
             changes:
               - added|modified: 'deployments/**'
       - id: matrix
         name: Generate application matrix
         run: |
-          application_matrix="${{ steps.filter.outputs.changes_files }})"
-          echo "$application_matrix"
+          appnames=(for line in ${${{ steps.filter.outputs.changes_files }}[@]}; do echo $line | sed -E 's#^deployments/(\w+).*#\1#'; done)
+          application_matrix="($appnames)"
+          echo "application_matrix=$application_matrix" | tee >> $GITHUB_OUTPUT
   call-release-workflow:
     needs: [changes]
     if: ${{ needs.changes.outputs.application_matrix }}
     strategy:
-      matrix: ${{ fromJSON(needs.changes.outputs.application_matrix) }}
+      matrix: ${{ needs.changes.outputs.application_matrix }}
       fail-fast: false
     uses: ./.github/workflows/release.yml
     with:
